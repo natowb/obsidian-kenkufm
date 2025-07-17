@@ -91,6 +91,7 @@ async function poll() {
 
 	currentState.set(data);
 	failureCounter = 0;
+	isKenkuConnected.set(true);
 	return true;
 }
 
@@ -103,6 +104,7 @@ export const startPolling = async (interval = 1000) => {
 };
 
 export const stopPolling = () => {
+	isKenkuConnected.set(false);
 	if (intervalId !== undefined) {
 		clearInterval(intervalId);
 		intervalId = undefined;
