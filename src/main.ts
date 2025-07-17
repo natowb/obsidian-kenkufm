@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian";
 import "virtual:uno.css";
-import { InsertTrackModal } from "./modals";
+import { InsertSoundboardModal, InsertTrackModal } from "./modals";
 import { registerCodeBlockProcessors } from "./processors";
 import * as kenkuConnector from "./kenku/kenkuConnector";
 import { isKenkuConnected } from "./stores/kenkuStore";
@@ -32,6 +32,14 @@ export default class KenkuFMRemotePlugin extends Plugin {
 			name: "Insert Track",
 			callback: () => {
 				new InsertTrackModal(this.app).open();
+			},
+		});
+
+		this.addCommand({
+			id: "kenku-insert-soundboard",
+			name: "Insert Soundboard",
+			callback: () => {
+				new InsertSoundboardModal(this.app).open();
 			},
 		});
 

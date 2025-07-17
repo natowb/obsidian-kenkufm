@@ -1,44 +1,69 @@
 import { type App, SuggestModal } from "obsidian";
-import { tracks } from "./stores/kenkuStore";
+import { soundboards, sounds, tracks } from "./stores/kenkuStore";
 import { get } from "svelte/store";
+import type { KenkuItem, KenkuSoundboard } from "./types";
 
-interface Track {
-	title: string;
-	id: string;
-}
-
-export enum KenkuModalType {
-	Sound = 0,
-	Track = 1,
-}
-
-export class InsertTrackModal extends SuggestModal<Track> {
-	tracks: Track[] = [];
-	type: KenkuModalType;
-
-	constructor(app: App, type: KenkuModalType = KenkuModalType.Track) {
-		super(app);
-		this.type = type;
-	}
-
+export class InsertTrackModal extends SuggestModal<KenkuItem> {
 	// Returns all available suggestions.
-	getSuggestions(query: string): Track[] {
+	getSuggestions(query: string): KenkuItem[] {
 		return get(tracks).filter((track) =>
 			track.title.toLowerCase().includes(query.toLowerCase()),
 		);
 	}
 
 	// Renders each suggestion item.
-	renderSuggestion(track: Track, el: HTMLElement) {
+	renderSuggestion(track: KenkuItem, el: HTMLElement) {
 		el.createEl("div", { text: track.title });
 		el.createEl("small", { text: track.id });
 	}
 
 	// Perform action on the selected suggestion.
-	onChooseSuggestion(track: Track, evt: MouseEvent | KeyboardEvent) {
+	onChooseSuggestion(track: KenkuItem, evt: MouseEvent | KeyboardEvent) {
 		const editor = this.app.workspace.activeEditor?.editor;
 		if (editor) {
 			const codeBlock = `\`\`\`kenkufm-track\n   id: ${track.id}\n\`\`\``;
+			editor.replaceRange(codeBlock, editor.getCursor());
+		}
+	}
+}
+
+export class InsertSoundboardModal extends SuggestModal<KenkuSoundboard> {
+	// Returns all available suggestions.
+	getSuggestions(query: string): KenkuSoundboard[] {
+		return get(soundboards).filter((track) =>
+			track.title.toLowerCase().includes(query.toLowerCase()),
+		);
+	}
+
+	// Renders each suggestion item.
+	renderSuggestion(track: KenkuSoundboard, el: HTMLElement) {
+		el.createEl("div", { text: track.title });
+		el.createEl("small", { text: track.id });
+	}
+
+	// Perform action on the selected suggestion.
+	onChooseSuggestion(item: KenkuSoundboard, evt: MouseEvent | KeyboardEvent) {
+		const editor = this.app.workspace.activeEditor?.editor;
+		if (editor) {
+			const boards = get(soundboards);
+
+			const index = boards.findIndex((s) => s.id === item.id);
+			if (index === -1) {
+				return;
+			}
+
+			const board = boards[index];
+			const allSounds = get(sounds);
+			const soundEntries = board.sounds
+				.map((soundId) => {
+					const sound = allSounds.find((s) => s.id === soundId);
+					if (!sound) return null;
+					return `  - title: "${sound.title}"\n    id: "${sound.id}"`;
+				})
+				.filter(Boolean)
+				.join("\n");
+
+			const codeBlock = `\`\`\`kenkufm-sound\ntitle: "${board.title}"\nsounds:\n${soundEntries}\n\`\`\``;
 			editor.replaceRange(codeBlock, editor.getCursor());
 		}
 	}

@@ -12,7 +12,9 @@ export interface KenkuTrack extends KenkuItem {
 }
 
 export type KenkuPlaylist = KenkuItem;
-export type KenkuSoundboard = KenkuItem;
+export interface KenkuSoundboard extends KenkuItem {
+	sounds: string[];
+}
 
 export interface KenkuFMState {
 	playing: boolean;
